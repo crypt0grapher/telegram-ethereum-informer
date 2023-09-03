@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Black">
+    <option name="enabledOnReformat" value="true" />
+    <option name="enabledOnSave" value="true" />
+    <option name="executionMode" value="BINARY" />
+    <option name="pathToExecutable" value="$PROJECT_DIR$/../anaconda3/bin/black" />
+    <option name="sdkUUID" value="2a229882-47af-4c94-89c8-ff4ce37445ef" />
+  </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.11 (unibot)" project-jdk-type="Python SDK" />
+</project>
