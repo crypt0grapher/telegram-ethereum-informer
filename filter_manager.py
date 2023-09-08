@@ -2,11 +2,11 @@ from threading import Lock
 
 from filter import Filter
 
-filters = []
+all_filters = []
 filter_lock = Lock()
 
-class WalletManager:
 
+class WalletManager:
     def add_filter(self, filter_details: Filter):
         # Implement logic
         pass
@@ -22,6 +22,3 @@ class WalletManager:
     def is_wallet_fresh(self, wallet_address):
         # Implement logic to check if a wallet is fresh
         pass
-
-
-
