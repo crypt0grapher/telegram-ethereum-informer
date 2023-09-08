@@ -5,7 +5,7 @@
     <option name="enabledOnSave" value="true" />
     <option name="executionMode" value="BINARY" />
     <option name="pathToExecutable" value="$PROJECT_DIR$/../anaconda3/bin/black" />
-    <option name="sdkUUID" value="2a229882-47af-4c94-89c8-ff4ce37445ef" />
+    <option name="sdkUUID" value="32b0628f-e771-4da1-b08b-38f2b048b11e" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.11 (unibot)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.11 (telegram-ethereum-informer)" project-jdk-type="Python SDK" />
 </project>
