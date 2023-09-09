@@ -116,6 +116,18 @@ class NewFilterMessage(BaseMessage):
         self.navigation.filter.generator_options.operation = filter.Operation.Deployment
         return "Updated"
 
+    def set_buytoken_operation(self) -> str:
+        self.navigation.filter.operation = filter.Operation.BuyToken
+        return "Updated"
+
+    def set_ethtransfer_operation(self) -> str:
+        self.navigation.filter.operation = filter.Operation.ETHTransfer
+        return "Updated"
+
+    def set_deployment_operation(self) -> str:
+        self.navigation.filter.operation = filter.Operation.Deployment
+        return "Updated"
+
     def confirm(self) -> str:
         if self.navigation.filter.complete():
             all_filters.append(self.navigation.filter)
@@ -244,6 +256,29 @@ class NewFilterMessage(BaseMessage):
             ],
             [
                 MenuButton(
+                    label=f"✅{filter.Operation.Deployment.value}"
+                    if filter.Operation.Deployment.value
+                    == self.navigation.filter.operation.value
+                    else filter.Operation.Deployment.value,
+                    callback=self.set_deployment_operation,
+                ),
+                MenuButton(
+                    label=f"✅{filter.Operation.BuyToken.value}"
+                    if filter.Operation.BuyToken.value
+                    == self.navigation.filter.operation.value
+                    else filter.Operation.BuyToken.value,
+                    callback=self.set_buytoken_operation,
+                ),
+                MenuButton(
+                    label=f"✅{filter.Operation.ETHTransfer.value}"
+                    if filter.Operation.ETHTransfer.value
+                    == self.navigation.filter.operation.value
+                    else filter.Operation.ETHTransfer.value,
+                    callback=self.set_ethtransfer_operation,
+                ),
+            ],
+            [
+                MenuButton(
                     label="Min Eth: "
                     + str(self.navigation.filter.min_value).replace(".", "•"),
                     callback=self.new_min_value,
@@ -273,6 +308,16 @@ class NewFilterMessage(BaseMessage):
                 )
             ],
         ]
+
+        if self.navigation.filter.is_correct():
+            self.keyboard.append(
+                [
+                    MenuButton(
+                        label="👍 Confirm and Start Filter",
+                        callback=self.confirm,
+                    )
+                ]
+            )
 
         if self.navigation.filter.generator:
             self.keyboard.extend(
@@ -310,13 +355,4 @@ class NewFilterMessage(BaseMessage):
                 ]
             )
 
-            if self.navigation.filter.is_correct():
-                self.keyboard.append(
-                    [
-                        MenuButton(
-                            label="👍 Confirm and Start Filter",
-                            callback=self.confirm,
-                        ),
-                    ],
-                )
         return "Select the field of the filter to edit with buttons, then confirm to start the filter"

@@ -26,6 +26,7 @@ class Filter:
         min_value: float = 0.01,
         max_value: float = 10.0,
         freshness: int = 3,
+        operation: Operation = Operation.ETHTransfer,
         channel: str = "",
         generator: bool = False,
         generator_options: Generator = Generator(Operation.BuyToken, None, None),
@@ -38,6 +39,7 @@ class Filter:
         self.to_address = to_address
         self.min_value = min_value
         self.max_value = max_value
+        self.operation = operation
         self.freshness = freshness
         self.channel = channel if channel else chat_id
         self.generator_options = generator_options
