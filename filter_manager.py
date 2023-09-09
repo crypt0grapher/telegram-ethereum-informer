@@ -6,7 +6,7 @@ all_filters = []
 filter_lock = Lock()
 
 
-class WalletManager:
+class FilterManager:
     def add_filter(self, filter_details: Filter):
         # Implement logic
         pass

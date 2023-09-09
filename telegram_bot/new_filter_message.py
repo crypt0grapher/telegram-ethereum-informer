@@ -11,11 +11,24 @@ from telegram_menu import (
 )
 
 from filter import Filter
+from filter_manager import all_filters
 from helpers import safe_int_parse, safe_float_parse
 from telegram_bot.name_message import NameMessage
 from telegram_bot.navigation_handler import BotNavigationHandler
 from telegram.ext._callbackcontext import CallbackContext
 from telegram.ext._utils.types import BD, BT, CD, UD
+from enum import Enum
+from web3 import Web3
+
+
+FIELDS = {
+    "NAME": "NAME",
+    "FROM": "FROM",
+    "TO": "TO",
+    "MIN": "MIN",
+    "MAX": "MAX",
+    "FRESH": "FRESH",
+}
 
 
 class NewFilterMessage(BaseMessage):
@@ -40,33 +53,33 @@ class NewFilterMessage(BaseMessage):
         navigation.filter = Filter(navigation.chat_id)
 
     def new_name(self) -> str:
-        self.selected = "Name"
-        self.navigation.send_message(f"Enter name for filter")
+        self.selected = FIELDS["NAME"]
+        self.navigation.send_message(f"Enter name for the filter")
         return "Enter Filter Name"
 
     def new_from_address(self) -> str:
-        self.selected = "From"
-        self.navigation.send_message(f"Enter from address for filter")
+        self.selected = FIELDS["FROM"]
+        self.navigation.send_message(f"Enter from address for the filter")
         return "Enter From Address"
 
     def new_to_address(self) -> str:
-        self.selected = "To"
-        self.navigation.send_message(f"Enter to address for filter")
+        self.selected = FIELDS["TO"]
+        self.navigation.send_message(f"Enter to address for the filter")
         return "Enter To Address"
 
     def new_min_value(self) -> str:
-        self.selected = "Min Value"
-        self.navigation.send_message(f"Enter Min Value for filter")
+        self.selected = FIELDS["MIN"]
+        self.navigation.send_message(f"Enter Min Value for the filter")
         return "Enter Min Value"
 
     def new_max_value(self) -> str:
-        self.selected = "Max Value"
-        self.navigation.send_message(f"Enter Max Value for filter")
+        self.selected = FIELDS["MAX"]
+        self.navigation.send_message(f"Enter Max Value for the filter")
         return "Enter Max Value"
 
     def new_freshness(self) -> str:
-        self.selected = "Freshness"
-        self.navigation.send_message(f"Enter Freshness for filter")
+        self.selected = FIELDS["FRESH"]
+        self.navigation.send_message(f"Enter Freshness for the filter")
         return "Enter Freshness"
 
     def confirm(self) -> str:
@@ -78,29 +91,54 @@ class NewFilterMessage(BaseMessage):
     async def text_input(
         self, text: str, context: Optional[CallbackContext[BT, UD, CD, BD]] = None
     ) -> None:
-        if self.selected is None:
+        selected = self.selected
+        self.selected = None
+        if selected is None:
             await self.navigation.send_message("Select the field to update first")
             return
-        elif self.selected == "Name":
+        elif selected == FIELDS["NAME"]:
+            if len(all_filters) > 0 and any(
+                filter.name.upper() == text.upper() for filter in all_filters
+            ):
+                await self.navigation.send_message("Name already exists")
+                return
             self.navigation.filter.name = text
-        elif self.selected == "From":
-            self.navigation.filter.from_address = text
-        elif self.selected == "To":
-            self.navigation.filter.to_address = text
-        elif self.selected == "Min Value":
+        elif selected == FIELDS["FROM"]:
+            if Web3.is_address(text):
+                self.navigation.filter.from_address = text
+                self.navigation.filter.to_address = None
+            else:
+                await self.navigation.send_message("Invalid address")
+                return
+        elif selected == FIELDS["TO"]:
+            if Web3.is_address(text):
+                self.navigation.filter.from_address = None
+                self.navigation.filter.to_address = text
+            else:
+                await self.navigation.send_message("Invalid address")
+                return
+        elif selected == FIELDS["MIN"]:
             value = safe_float_parse(text)
-            if safe_float_parse(text):
+            if value:
                 self.navigation.filter.min_value = value
-        elif self.selected == "Max Value":
+            else:
+                await self.navigation.send_message("Invalid number")
+                return
+        elif selected == FIELDS["MAX"]:
             value = safe_float_parse(text)
-            if safe_float_parse(text):
+            if value:
                 self.navigation.filter.max_value = value
-        elif self.selected == "Freshness":
+            else:
+                await self.navigation.send_message("Invalid number")
+                return
+        elif selected == FIELDS["FRESH"]:
             value = safe_int_parse(text)
-            if safe_int_parse(text):
+            if value:
                 self.navigation.filter.freshness = value
-
-        await self.navigation.send_message(f"{self.selected} updated")
+            else:
+                await self.navigation.send_message("Invalid number")
+                return
+        await self.navigation.send_message(f"{selected} updated")
         await self.navigation.edit_message(self)
 
     async def app_update_display(self) -> None:
@@ -112,7 +150,7 @@ class NewFilterMessage(BaseMessage):
         self.keyboard = [
             [
                 MenuButton(
-                    label="✅ Filter Name: " + self.navigation.filter.name
+                    label="✅ Name: " + self.navigation.filter.name
                     if self.navigation.filter.name
                     else "Filter Name",
                     callback=self.new_name,
@@ -121,8 +159,7 @@ class NewFilterMessage(BaseMessage):
             ],
             [
                 MenuButton(
-                    label="✅ Filter from_address: "
-                    + self.navigation.filter.from_address
+                    label="✅ Tx From: " + self.navigation.filter.from_address
                     if self.navigation.filter.from_address
                     else "Filter from_address",
                     callback=self.new_from_address,
@@ -130,7 +167,7 @@ class NewFilterMessage(BaseMessage):
             ],
             [
                 MenuButton(
-                    label="✅ Filter to_address: " + self.navigation.filter.to_address
+                    label="✅ Tx To: " + self.navigation.filter.to_address
                     if self.navigation.filter.to_address
                     else "Filter to_address",
                     callback=self.new_to_address,
@@ -138,35 +175,23 @@ class NewFilterMessage(BaseMessage):
             ],
             [
                 MenuButton(
-                    label="✅ Filter min_value: " + str(self.navigation.filter.min_value)
-                    if self.navigation.filter.min_value
-                    else "Filter min_value",
+                    label=f"Min Eth: {str(self.navigation.filter.min_value)}",
                     callback=self.new_min_value,
-                )
-            ],
-            [
+                ),
                 MenuButton(
-                    label="✅ Filter max_value: " + str(self.navigation.filter.max_value)
-                    if self.navigation.filter.max_value
-                    else "Filter max_value",
+                    label=f"Max Eth: {str(self.navigation.filter.max_value)}",
                     callback=self.new_max_value,
-                )
-            ],
-            [
+                ),
                 MenuButton(
-                    label="✅ Filter freshness: " + str(self.navigation.filter.freshness)
-                    if self.navigation.filter.freshness
-                    else "Filter freshness",
+                    label=f"Fresh: {str(self.navigation.filter.freshness)}",
                     callback=self.new_freshness,
-                )
+                ),
             ],
             [
                 MenuButton(
-                    label="🆗Start Filter",
+                    label="🆗 Confirm and Start Filter",
                     callback=self.confirm,
                 ),
             ],
         ]
-        return (
-            "Select the field of the filter to edit\nthen confirm to start the filter"
-        )
+        return "Select the field of the filter to edit with buttons, then confirm to start the filter"
