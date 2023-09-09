@@ -28,7 +28,7 @@ class Filter:
         freshness: int = 3,
         channel: str = "",
         generator: bool = False,
-        generator_options: Generator = None,
+        generator_options: Generator = Generator(Operation.BuyToken, None, None),
         generator_channel: str = "",
         sub_filter_ids: List[int] = None,
     ):
@@ -41,7 +41,7 @@ class Filter:
         self.freshness = freshness
         self.channel = channel if channel else chat_id
         self.generator_options = generator_options
-        self.generator_channel = generator_channel
+        self.generator_channel = generator_channel if generator_channel else chat_id
         self.generator = generator
         self.sub_filter_ids = sub_filter_ids
 

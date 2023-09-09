@@ -32,7 +32,7 @@ FIELDS = {
     "MAX": "MAX",
     "FRESH": "FRESH",
     "CHANNEL": "CHANNEL",
-    "GENERATE": "GENERATE",
+    "GENERATOR_CHANNEL": "GENERATOR_CHANNEL",
 }
 
 
@@ -91,6 +91,13 @@ class NewFilterMessage(BaseMessage):
         self.navigation.send_message(f"Enter channel to notify in")
         return "Enter Channel"
 
+    def new_generator_channel(self) -> str:
+        self.selected = FIELDS["GENERATOR_CHANNEL"]
+        self.navigation.send_message(
+            f"Enter channel for generated filters to notify in"
+        )
+        return "Enter Channel"
+
     def toggle_generator(self) -> str:
         self.navigation.filter.generator = not self.navigation.filter.generator
         return self.update()
@@ -138,24 +145,53 @@ class NewFilterMessage(BaseMessage):
                 return
         elif selected == FIELDS["MIN"]:
             value = safe_float_parse(text)
-            if value:
-                self.navigation.filter.min_value = value
+            if value and value > 0:
+                if value > self.navigation.filter.max_value:
+                    await self.navigation.send_message(
+                        "Minimum filter value should be less or equal than maximum value"
+                    )
+                    return
+                else:
+                    self.navigation.filter.min_value = value
             else:
                 await self.navigation.send_message("Invalid number")
                 return
         elif selected == FIELDS["MAX"]:
             value = safe_float_parse(text)
-            if value:
-                self.navigation.filter.max_value = value
+            if value and value > 0:
+                if value < self.navigation.filter.min_value:
+                    await self.navigation.send_message(
+                        "Maximum filter value should be greater or equal than than minimum value"
+                    )
+                    return
+                else:
+                    self.navigation.filter.max_value = value
+
             else:
                 await self.navigation.send_message("Invalid number")
                 return
         elif selected == FIELDS["FRESH"]:
             value = safe_int_parse(text)
-            if value:
+            if value and value > 0:
                 self.navigation.filter.freshness = value
             else:
                 await self.navigation.send_message("Invalid number")
+                return
+        elif selected == FIELDS["CHANNEL"]:
+            if self.navigation.has_access_to_channel(text):
+                self.navigation.filter.channel = text
+            else:
+                await self.navigation.send_message(
+                    "Invalid channel or the bot has no access to it"
+                )
+                return
+        elif selected == FIELDS["GENERATOR_CHANNEL"]:
+            if self.navigation.has_access_to_channel(text):
+                self.navigation.filter.generator_channel = text
+            else:
+                await self.navigation.send_message(
+                    "Invalid channel or the bot has no access to it"
+                )
                 return
         await self.navigation.send_message(f"{selected} updated")
         await self.navigation.edit_message(self)
@@ -216,7 +252,7 @@ class NewFilterMessage(BaseMessage):
             ],
             [
                 MenuButton(
-                    label="Generates wallet filters: :white_check_mark: Yes"
+                    label="Generate wallet filters: :white_check_mark: Yes"
                     if self.navigation.filter.generator
                     else "Generates wallet filters: :x: No",
                     callback=self.toggle_generator,
@@ -235,25 +271,32 @@ class NewFilterMessage(BaseMessage):
                 [
                     [
                         MenuButton(
-                            label="Generator Channel Id: "
-                            + self.navigation.filter.generator_channel
-                            if self.navigation.filter.generator_channel
-                            else "Generator Channel Id",
-                            callback=self.new_channel,
+                            label="Wallet filter Channel Id: "
+                            + str(self.navigation.filter.generator_channel),
+                            callback=self.new_generator_channel,
                         )
                     ],
                     [
                         MenuButton(
-                            label=filter.Operation.Deployment.value,
-                            callback=self.new_channel,
+                            label=f"✅{filter.Operation.Deployment.value}"
+                            if filter.Operation.Deployment.value
+                            == self.navigation.filter.generator_options.operation.value
+                            else filter.Operation.Deployment.value,
+                            callback=self.set_generator_deployment_operation,
                         ),
                         MenuButton(
-                            label=filter.Operation.BuyToken.value,
-                            callback=self.new_channel,
+                            label=f"✅{filter.Operation.BuyToken.value}"
+                            if filter.Operation.BuyToken.value
+                            == self.navigation.filter.generator_options.operation.value
+                            else filter.Operation.BuyToken.value,
+                            callback=self.set_generator_buytoken_operation,
                         ),
                         MenuButton(
-                            label=filter.Operation.ETHTransfer.value,
-                            callback=self.new_channel,
+                            label=f"✅{filter.Operation.ETHTransfer.value}"
+                            if filter.Operation.ETHTransfer.value
+                            == self.navigation.filter.generator_options.operation.value
+                            else filter.Operation.ETHTransfer.value,
+                            callback=self.set_generator_ethtransfer_operation,
                         ),
                     ],
                 ]

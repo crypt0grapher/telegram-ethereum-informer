@@ -22,3 +22,15 @@ class BotNavigationHandler(NavigationHandler):
         self.filter: Filter = Filter(super().chat_id)
         """Do Go Back logic."""
         return await self.select_menu_button("Back")
+
+    @property
+    def bot(self):
+        return self._bot
+
+    def has_access_to_channel(self, channel):
+        try:
+            self.bot.get_chat(chat_id=channel)
+            return True
+        except Exception as e:
+            return False
+        return True
