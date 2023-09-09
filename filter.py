@@ -1,5 +1,20 @@
 from typing import List
 
+from enum import Enum
+
+
+class Operation(Enum):
+    Deployment = "Deployment"
+    BuyToken = "BuyToken"
+    ETHTransfer = "ETHTransfer"
+
+
+class Generator:
+    def __init__(self, operation, parent, channel):
+        self.operation = operation
+        self.parent = parent
+        self.channel = channel
+
 
 class Filter:
     def __init__(
@@ -11,9 +26,10 @@ class Filter:
         min_value: float = 0.01,
         max_value: float = 10.0,
         freshness: int = 3,
-        functions: List[str] = None,
-        channel: int = "",
+        channel: str = "",
         generator: bool = False,
+        generator_options: Generator = None,
+        generator_channel: str = "",
         sub_filter_ids: List[int] = None,
     ):
         self.chat_id = chat_id
@@ -23,8 +39,9 @@ class Filter:
         self.min_value = min_value
         self.max_value = max_value
         self.freshness = freshness
-        self.functions = functions
-        self.channel = chat_id
+        self.channel = channel if channel else chat_id
+        self.generator_options = generator_options
+        self.generator_channel = generator_channel
         self.generator = generator
         self.sub_filter_ids = sub_filter_ids
 

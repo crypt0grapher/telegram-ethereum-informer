@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import logging
 from typing import Optional, List
@@ -10,6 +11,7 @@ from telegram_menu import (
     ButtonType,
 )
 
+import filter
 from ethereum_listener import update_filters
 from filter import Filter
 from filter_manager import all_filters
@@ -29,6 +31,8 @@ FIELDS = {
     "MIN": "MIN",
     "MAX": "MAX",
     "FRESH": "FRESH",
+    "CHANNEL": "CHANNEL",
+    "GENERATE": "GENERATE",
 }
 
 
@@ -82,13 +86,26 @@ class NewFilterMessage(BaseMessage):
         self.navigation.send_message(f"Enter Freshness for the filter")
         return "Enter Freshness"
 
+    def new_channel(self) -> str:
+        self.selected = FIELDS["CHANNEL"]
+        self.navigation.send_message(f"Enter channel to notify in")
+        return "Enter Channel"
+
+    def toggle_generator(self) -> str:
+        self.navigation.filter.generator = not self.navigation.filter.generator
+        return self.update()
+
     def confirm(self) -> str:
-        all_filters.append(self.navigation.filter)
-        update_filters()
-        self.navigation.filter == None
-        self.navigation.send_message(f"<b>Added</b><br/>{self.navigation.filter}")
-        self.kill_message()
-        return "Done"
+        if self.navigation.filter.complete():
+            all_filters.append(self.navigation.filter)
+            update_filters()
+            self.navigation.filter == None
+            self.navigation.send_message(f"<b>Added</b><br/>{self.navigation.filter}")
+            self.kill_message()
+            return "Done"
+        else:
+            self.navigation.send_message("Filter details are not complete")
+            return "Fill in the details first"
 
     async def text_input(
         self, text: str, context: Optional[CallbackContext[BT, UD, CD, BD]] = None
@@ -154,7 +171,7 @@ class NewFilterMessage(BaseMessage):
                 MenuButton(
                     label="✅ Name: " + self.navigation.filter.name
                     if self.navigation.filter.name
-                    else "Filter Name",
+                    else "Name",
                     callback=self.new_name,
                     btype=ButtonType.MESSAGE,
                 )
@@ -163,7 +180,7 @@ class NewFilterMessage(BaseMessage):
                 MenuButton(
                     label="✅ Tx From: " + self.navigation.filter.from_address
                     if self.navigation.filter.from_address
-                    else "Filter from_address",
+                    else "From",
                     callback=self.new_from_address,
                 )
             ],
@@ -171,7 +188,7 @@ class NewFilterMessage(BaseMessage):
                 MenuButton(
                     label="✅ Tx To: " + self.navigation.filter.to_address
                     if self.navigation.filter.to_address
-                    else "Filter to_address",
+                    else "To",
                     callback=self.new_to_address,
                 )
             ],
@@ -193,9 +210,52 @@ class NewFilterMessage(BaseMessage):
             ],
             [
                 MenuButton(
+                    label=f"Notification channel Id: {self.navigation.filter.channel}",
+                    callback=self.new_channel,
+                )
+            ],
+            [
+                MenuButton(
+                    label="Generates wallet filters: :white_check_mark: Yes"
+                    if self.navigation.filter.generator
+                    else "Generates wallet filters: :x: No",
+                    callback=self.toggle_generator,
+                )
+            ],
+            [
+                MenuButton(
                     label="🆗 Confirm and Start Filter",
                     callback=self.confirm,
                 ),
             ],
         ]
+
+        if self.navigation.filter.generator:
+            self.keyboard.extend(
+                [
+                    [
+                        MenuButton(
+                            label="Generator Channel Id: "
+                            + self.navigation.filter.generator_channel
+                            if self.navigation.filter.generator_channel
+                            else "Generator Channel Id",
+                            callback=self.new_channel,
+                        )
+                    ],
+                    [
+                        MenuButton(
+                            label=filter.Operation.Deployment.value,
+                            callback=self.new_channel,
+                        ),
+                        MenuButton(
+                            label=filter.Operation.BuyToken.value,
+                            callback=self.new_channel,
+                        ),
+                        MenuButton(
+                            label=filter.Operation.ETHTransfer.value,
+                            callback=self.new_channel,
+                        ),
+                    ],
+                ]
+            )
         return "Select the field of the filter to edit with buttons, then confirm to start the filter"

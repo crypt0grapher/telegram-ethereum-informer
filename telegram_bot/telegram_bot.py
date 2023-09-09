@@ -182,7 +182,7 @@ class StartMessage(BaseMessage):
     def update(self) -> str:
         return (
             "Welcome to Crypto Farmers Ethereum Informer Bot\nSet up filters and get notifications about "
-            "transactions at every new block"
+            "transactions with every new block"
         )
 
 
