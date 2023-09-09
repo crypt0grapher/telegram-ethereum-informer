@@ -45,6 +45,23 @@ class Filter:
         self.generator = generator
         self.sub_filter_ids = sub_filter_ids
 
+    def is_correct(self):
+        if self.from_address and self.to_address:
+            return False
+        if self.min_value > self.max_value:
+            return False
+        if self.freshness < 0:
+            return False
+        return (
+            self.chat_id
+            and self.name
+            and (self.from_address or self.to_address)
+            and self.min_value
+            and self.max_value
+            and self.freshness
+            and self.channel
+        )
+
     def __str__(self):
         return (
             f"'<strong>{self.name}'</strong>:\n"

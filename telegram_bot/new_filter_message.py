@@ -102,6 +102,20 @@ class NewFilterMessage(BaseMessage):
         self.navigation.filter.generator = not self.navigation.filter.generator
         return self.update()
 
+    def set_generator_buytoken_operation(self) -> str:
+        self.navigation.filter.generator_options.operation = filter.Operation.BuyToken
+        return "Updated"
+
+    def set_generator_ethtransfer_operation(self) -> str:
+        self.navigation.filter.generator_options.operation = (
+            filter.Operation.ETHTransfer
+        )
+        return "Updated"
+
+    def set_generator_deployment_operation(self) -> str:
+        self.navigation.filter.generator_options.operation = filter.Operation.Deployment
+        return "Updated"
+
     def confirm(self) -> str:
         if self.navigation.filter.complete():
             all_filters.append(self.navigation.filter)
@@ -254,15 +268,9 @@ class NewFilterMessage(BaseMessage):
                 MenuButton(
                     label="Generate wallet filters: :white_check_mark: Yes"
                     if self.navigation.filter.generator
-                    else "Generates wallet filters: :x: No",
+                    else "Generate wallet filters: :x: No",
                     callback=self.toggle_generator,
                 )
-            ],
-            [
-                MenuButton(
-                    label="🆗 Confirm and Start Filter",
-                    callback=self.confirm,
-                ),
             ],
         ]
 
@@ -301,4 +309,14 @@ class NewFilterMessage(BaseMessage):
                     ],
                 ]
             )
+
+            if self.navigation.filter.is_correct():
+                self.keyboard.append(
+                    [
+                        MenuButton(
+                            label="👍 Confirm and Start Filter",
+                            callback=self.confirm,
+                        ),
+                    ],
+                )
         return "Select the field of the filter to edit with buttons, then confirm to start the filter"
