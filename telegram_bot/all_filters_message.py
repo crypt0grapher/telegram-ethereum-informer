@@ -27,6 +27,5 @@ class AllFiltersMessage(BaseMessage):
         if len(all_filters) == 0:
             return "No filters added yet"
         for filter in all_filters:
-            self.add_button(filter.name, btype=ButtonType.MESSAGE)
-        self.add_button_back()
+            self.add_button(filter.name, btype=ButtonType.MESSAGE, new_row=True)
         return "Selet a filter"

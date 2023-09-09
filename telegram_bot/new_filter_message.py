@@ -129,12 +129,15 @@ class NewFilterMessage(BaseMessage):
         return "Updated"
 
     def confirm(self) -> str:
-        if self.navigation.filter.complete():
+        if self.navigation.filter.is_correct():
+            if any(filter == self.navigation.filter for filter in all_filters):
+                self.navigation.send_message("Filter already exists")
+                return "Filter already exists"
             all_filters.append(self.navigation.filter)
             update_filters()
             self.navigation.filter == None
-            self.navigation.send_message(f"<b>Added</b><br/>{self.navigation.filter}")
             self.kill_message()
+            self.navigation.send_message(f"<b>Added</b><br/>{self.navigation.filter}")
             return "Done"
         else:
             self.navigation.send_message("Filter details are not complete")
