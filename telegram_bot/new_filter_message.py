@@ -12,7 +12,6 @@ from telegram_menu import (
 )
 
 import filter
-from ethereum_listener import update_filters
 from filter import Filter
 from filter_manager import all_filters
 from helpers import safe_int_parse, safe_float_parse
@@ -134,11 +133,9 @@ class NewFilterMessage(BaseMessage):
                 self.navigation.send_message("Filter already exists")
                 return "Filter already exists"
             all_filters.append(self.navigation.filter)
-            update_filters()
-            self.navigation.filter == None
-            self.kill_message()
-            self.navigation.send_message(f"<b>Added</b><br/>{self.navigation.filter}")
-            return "Done"
+            self.navigation.filter = Filter(self.navigation.chat_id)
+            self.navigation.send_message(f"Filter started")
+            return "Filter started"
         else:
             self.navigation.send_message("Filter details are not complete")
             return "Fill in the details first"

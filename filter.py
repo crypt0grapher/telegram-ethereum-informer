@@ -31,6 +31,7 @@ class Filter:
         generator: bool = False,
         generator_options: Generator = Generator(Operation.BuyToken, None, None),
         generator_channel: str = "",
+        is_active: bool = True,
         sub_filter_ids: List[int] = None,
     ):
         self.chat_id = chat_id
@@ -45,6 +46,7 @@ class Filter:
         self.generator_options = generator_options
         self.generator_channel = generator_channel if generator_channel else chat_id
         self.generator = generator
+        self.is_active = is_active
         self.sub_filter_ids = sub_filter_ids
 
     def is_correct(self):

@@ -176,7 +176,7 @@ class StartMessage(BaseMessage):
         system = SystemAppMessage(navigation)
         self.add_button(label="All Filters", callback=AllFiltersMessage(navigation))
         self.add_button(label="Wallets Found", callback=AllFiltersMessage(navigation))
-        self.add_button(label="New Filter", callback=NewFilterMessage(navigation))
+        self.add_button(label="Add Filter", callback=NewFilterMessage(navigation))
         self.add_button(label="Status", callback=system)
 
     def update(self) -> str:
