@@ -10,6 +10,7 @@ from telegram_menu import (
     ButtonType,
 )
 
+from ethereum_listener import update_filters
 from filter import Filter
 from filter_manager import all_filters
 from helpers import safe_int_parse, safe_float_parse
@@ -50,7 +51,6 @@ class NewFilterMessage(BaseMessage):
             home_after=True,
         )
         self.selected = None
-        navigation.filter = Filter(navigation.chat_id)
 
     def new_name(self) -> str:
         self.selected = FIELDS["NAME"]
@@ -83,9 +83,11 @@ class NewFilterMessage(BaseMessage):
         return "Enter Freshness"
 
     def confirm(self) -> str:
-        ####TODO add filter to the array and update ethereum listener
-        self.navigation.send_message(f"<b>Added</b><br/>")
-        # self.navigation.send_message(f"<b>Added</b><br/>{self.navigation.filter}")
+        all_filters.append(self.navigation.filter)
+        update_filters()
+        self.navigation.filter == None
+        self.navigation.send_message(f"<b>Added</b><br/>{self.navigation.filter}")
+        self.kill_message()
         return "Done"
 
     async def text_input(
@@ -175,15 +177,17 @@ class NewFilterMessage(BaseMessage):
             ],
             [
                 MenuButton(
-                    label=f"Min Eth: {str(self.navigation.filter.min_value)}",
+                    label="Min Eth: "
+                    + str(self.navigation.filter.min_value).replace(".", "•"),
                     callback=self.new_min_value,
                 ),
                 MenuButton(
-                    label=f"Max Eth: {str(self.navigation.filter.max_value)}",
+                    label="Max Eth: "
+                    + str(self.navigation.filter.max_value).replace(".", "•"),
                     callback=self.new_max_value,
                 ),
                 MenuButton(
-                    label=f"Fresh: {str(self.navigation.filter.freshness)}",
+                    label=f"Fresh: {self.navigation.filter.freshness}",
                     callback=self.new_freshness,
                 ),
             ],

@@ -1,7 +1,7 @@
 import logging
 
 
-def safe_int_parse(text):
+def safe_int_parse(text) -> int:
     try:
         return int(text)
     except ValueError:
@@ -9,7 +9,7 @@ def safe_int_parse(text):
         return None
 
 
-def safe_float_parse(text):
+def safe_float_parse(text) -> float:
     try:
         return float(text)
     except ValueError:

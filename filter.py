@@ -9,10 +9,10 @@ class Filter:
         from_address: str = None,
         to_address: str = None,
         min_value: float = 0.01,
-        max_value: float = 10,
+        max_value: float = 10.0,
         freshness: int = 3,
         functions: List[str] = None,
-        channel: str = "",
+        channel: int = "",
         generator: bool = False,
         sub_filter_ids: List[int] = None,
     ):
@@ -24,7 +24,7 @@ class Filter:
         self.max_value = max_value
         self.freshness = freshness
         self.functions = functions
-        self.channel = channel
+        self.channel = chat_id
         self.generator = generator
         self.sub_filter_ids = sub_filter_ids
 

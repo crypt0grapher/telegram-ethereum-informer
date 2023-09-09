@@ -38,9 +38,9 @@ def process_block(block):
 
 
 # Function to update listener based on changes in the filters array
-def update_filters(new_filters):
+def update_filters():
     global filter_list
-    filter_list = new_filters
+    pass
 
 
 async def listen_to_new_blocks(ws_uri, rpc_id=1):

@@ -16,7 +16,7 @@ class BotNavigationHandler(NavigationHandler):
 
     def __init__(self, bot: Bot, chat: Chat, scheduler: BaseScheduler):
         super().__init__(bot, chat, scheduler)
-        self.filter = None
+        self.filter = Filter(self.chat_id)
 
     async def goto_back(self) -> int:
         self.filter: Filter = Filter(super().chat_id)
