@@ -42,10 +42,9 @@ async def listen_to_new_blocks(ws_uri, rpc_id=1):
         while True:
             async for response in w3.listen_to_websocket():
                 block_number = response["number"]
-                if block_number % 100 == 0:
-                    logging.info("Current block: " + str(block_number))
-                    block = await w3.eth.get_block(response["number"])
-                    await process_block(w3, block)
+                logging.info("Current block: " + str(block_number))
+                block = await w3.eth.get_block(response["number"])
+                await process_block(w3, block)
 
 
 def start_listener():

@@ -136,6 +136,7 @@ class NewFilterMessage(BaseMessage):
             # del self.navigation.filter
             self.navigation.filter = Filter(self.navigation.chat_id)
             await self.navigation.send_message(f"Filter started")
+            self.kill_message()
             return "Filter started"
         else:
             await self.navigation.send_message("Filter details are not complete")
