@@ -1,10 +1,35 @@
 import asyncio
 import json
+import logging
+
 from websockets import connect
 
 from filter import Filter
 from config import ETHERUM_NODE_WS_URI
-from all_filters import all_filters
+from all_filters import all_filters, add_new_filter
+import asyncio
+import json
+from websockets import connect
+from web3 import Web3
+
+from message_formatter import format_message
+from notifier import send_message
+
+
+# Function to process a block and filter transactions
+def process_block(block):
+    for tx in block["transactions"]:
+        for channel_id, filters in all_filters.items():
+            for f in filters:
+                if f.is_active:  # Only process active filters
+                    # Check if this transaction matches the filter
+                    if f.match_transaction(tx):
+                        # Send a Telegram notification to the channel_id
+                        send_message(f.channel, format_message(tx, f))
+                        # Generate new filter if needed
+                        if f.generator:
+                            new_filter = f.generate_new_filter(tx)
+                            add_new_filter(new_filter, channel_id)
 
 
 async def listen_to_new_blocks(ws_uri, rpc_id=1):
@@ -22,10 +47,9 @@ async def listen_to_new_blocks(ws_uri, rpc_id=1):
             if block_data:
                 block_number_hex = block_data.get("number")
                 block_number = int(block_number_hex, 16)
-                print(f"New block: {block_number}")
-
-                w3 = Web3(Web3.HTTPProvider(ws_uri.replace("wss", "https")))
-                block = w3.eth.get_block(block_number, True)
+                logging.debug(f"New block: {block_number}")
+                w3 = Web3(Web3.WebsocketProvider(ws_uri))
+                block = w3.eth.getBlock(block_number, True)
                 process_block(block)
 
 
@@ -33,8 +57,3 @@ def start_listener():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(listen_to_new_blocks(ETHERUM_NODE_WS_URI))
-
-
-# Starts the listener
-if __name__ == "__main__":
-    start_listener()

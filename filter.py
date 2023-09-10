@@ -60,6 +60,7 @@ class Filter:
         self.generator = generator
         self.is_active = is_active
         self.sub_filter_ids = sub_filter_ids
+        self.next_sub_filter_id = 1
 
     def to_json(self):
         return {
@@ -141,3 +142,46 @@ class Filter:
             self.is_active,
             self.sub_filter_ids,
         )
+
+    def generate_subfilter(self, address: str):
+        name = f"{self.name}_{format(self.next_sub_filter_id,'.2f')}"
+        self.next_sub_filter_id += 1
+        subfilter = Filter(
+            self.chat_id,
+            name,
+            from_address=address,
+            to_address=None,
+            min_value=0,
+            max_value=2**256 - 1,
+            operation=self.generator_options.operation,
+            channel=self.generator_options.channel,
+            parent=self.name,
+        )
+        self.sub_filter_ids.append(name)
+        return subfilter
+
+    def __del__(self):
+        if self.parent:
+            self.parent.sub_filter_ids.remove(self.name)
+            self.parent = None
+
+    def match_deployment(self, tx):
+        return tx["to"] == None and tx["value"] == "0x0"
+
+    def match_eth_transfer(self, tx):
+        return tx["to"] and tx["input"] == "0x" and int(tx["value"], 16) > 0
+
+    def match_buy_token(self, tx):
+        return tx["input"].startswith("0x7ff36ab5") or tx["input"].startswith(
+            "0x38ed1739"
+        )
+
+    def match_tx(self, tx):
+        if self.operation == Operation.Deployment:
+            return self.match_deployment(tx)
+        elif self.operation == Operation.BuyToken:
+            return self.match_buy_token(tx)
+        elif self.operation == Operation.ETHTransfer:
+            return self.match_eth_transfer(tx)
+        else:
+            return False

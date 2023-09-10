@@ -1,5 +1,11 @@
 # notifier.py
+from telegram.ext import Updater, CommandHandler
 
-def send_notification(channel, message):
-    # Send a message to a Telegram channel
-    pass
+from config import TELEGRAM_BOT_API
+
+
+# Function to send Telegram notification (stub)
+def send_message(channel, message):
+    updater = Updater(TELEGRAM_BOT_API)
+    updater.bot.send_message(channel, message, parse_mode="HTML")
+    updater.stop()
