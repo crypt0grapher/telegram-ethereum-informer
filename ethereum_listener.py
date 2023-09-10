@@ -3,16 +3,8 @@ import json
 from websockets import connect
 
 from filter import Filter
-
-ETHERUM_NODE_WS_URI = (
-    "wss://your.ethereum.node"  # Replace with your Ethereum WS node URI
-)
-
-# Initialize global list of filters
-all_filters = [
-    Filter("Filter1", "0x...", "0x...", True),
-    # Add more filters as needed
-]
+from config import ETHERUM_NODE_WS_URI
+from all_filters import all_filters
 
 
 async def listen_to_new_blocks(ws_uri, rpc_id=1):

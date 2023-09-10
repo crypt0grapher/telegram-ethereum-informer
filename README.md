@@ -33,7 +33,7 @@
 ├───state.py # config file with bot token and other settings
 ├───telegram_bot.py # telegram bot interface
 ├───ethereum_listener.py # ethereum node connection and data fetchers
-├───filter_manager.py # telegram bot filters
+├───all_filters.py # telegram bot filters
 ├───database.py # SQLite database connection and data fetchers
 ├───utils.py # utility functions
 ```

@@ -8,7 +8,11 @@ from telegram_menu import (
     ButtonType,
 )
 
-from filter_manager import all_filters
+from telegram.ext._callbackcontext import CallbackContext
+from telegram.ext._utils.types import BD, BT, CD, UD
+
+from filter import Filter
+from all_filters import all_filters, remove_filter, get_filters_by_chat_id
 from helpers import find_by_name
 from telegram_bot.navigation_handler import BotNavigationHandler
 from telegram_bot.new_filter_message import NewFilterMessage
@@ -25,44 +29,52 @@ class AllFiltersMessage(BaseMessage):
     ) -> None:
         super().__init__(navigation, AllFiltersMessage.LABEL, inlined=True)
 
-    def edit(self, button: MenuButton) -> str:
-        self.navigation.filter = all_filters[button.label]
-        NewFilterMessage(self.navigation)
-        return "Filter updated"
+    def edit(self, args) -> str:
+        self.navigation.filter = args[0].copy()
+        remove_filter(args[0].name, self.navigation.chat_id)
+        self.navigation.send_message(str(self.navigation.filter))
+        NewFilterMessage(self.navigation, edit=True)
+        return "Edit the filter"
 
-    async def toggle(self, button: MenuButton) -> str:
-        filter = find_by_name(button.label)
-        filter.is_active = not filter.is_active
+    async def toggle(
+        self,
+        args,
+    ) -> str:
+        filter_selected = args[0]
+        filter_selected.is_active = not filter_selected.is_active
         await self.navigation.edit_message(self)
         return "Filter updated"
 
-    async def delete(self, button: MenuButton) -> str:
-        self.navigation.filter = all_filters[button.label]
-        all_filters.remove(self.navigation.filter)
+    async def delete(self, args) -> str:
+        remove_filter(args[0].name, self.navigation.chat_id)
         await self.navigation.edit_message(self)
-        return "Filter deleted"
+        return self.update()
 
     def update(self) -> str:
-        if len(all_filters) == 0:
+        filters = get_filters_by_chat_id(self.navigation.chat_id)
+        self.keyboard = []
+        if len(filters) == 0:
             return "No filters added yet"
-
-        for filter in all_filters:
+        for filter in filters:
             self.keyboard.append(
                 [
                     MenuButton(
                         label=filter.name,
                         callback=self.edit,
                         btype=ButtonType.MESSAGE,
+                        args=[filter],
                     ),
                     MenuButton(
                         label="▶️" if filter.is_active else "⏸️",
                         callback=self.toggle,
                         btype=ButtonType.NOTIFICATION,
+                        args=[filter],
                     ),
                     MenuButton(
                         label="❌",
                         callback=self.delete,
                         btype=ButtonType.NOTIFICATION,
+                        args=[filter],
                     ),
                 ]
             )

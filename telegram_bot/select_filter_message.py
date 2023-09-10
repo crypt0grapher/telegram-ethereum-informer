@@ -8,7 +8,7 @@ from telegram_menu import (
     ButtonType,
 )
 
-from filter_manager import all_filters
+from all_filters import all_filters
 from telegram_bot.navigation_handler import BotNavigationHandler
 from telegram_bot.telegram_bot import UpdateCallback
 

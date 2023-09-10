@@ -13,7 +13,7 @@ from telegram_menu import (
 
 import filter
 from filter import Filter
-from filter_manager import all_filters
+from all_filters import all_filters, add_new_filter, is_unique_name
 from helpers import safe_int_parse, safe_float_parse
 from telegram_bot.name_message import NameMessage
 from telegram_bot.navigation_handler import BotNavigationHandler
@@ -129,10 +129,11 @@ class NewFilterMessage(BaseMessage):
 
     def confirm(self) -> str:
         if self.navigation.filter.is_correct():
-            if any(filter == self.navigation.filter for filter in all_filters):
+            if not is_unique_name(self.navigation.filter.name, self.navigation.chat_id):
                 self.navigation.send_message("Filter already exists")
                 return "Filter already exists"
-            all_filters.append(self.navigation.filter)
+            add_new_filter(self.navigation.filter, self.navigation.chat_id)
+            # del self.navigation.filter
             self.navigation.filter = Filter(self.navigation.chat_id)
             self.navigation.send_message(f"Filter started")
             return "Filter started"
@@ -257,22 +258,19 @@ class NewFilterMessage(BaseMessage):
             [
                 MenuButton(
                     label=f"✅{filter.Operation.Deployment.value}"
-                    if filter.Operation.Deployment.value
-                    == self.navigation.filter.operation.value
+                    if filter.Operation.Deployment == self.navigation.filter.operation
                     else filter.Operation.Deployment.value,
                     callback=self.set_deployment_operation,
                 ),
                 MenuButton(
                     label=f"✅{filter.Operation.BuyToken.value}"
-                    if filter.Operation.BuyToken.value
-                    == self.navigation.filter.operation.value
+                    if filter.Operation.BuyToken == self.navigation.filter.operation
                     else filter.Operation.BuyToken.value,
                     callback=self.set_buytoken_operation,
                 ),
                 MenuButton(
                     label=f"✅{filter.Operation.ETHTransfer.value}"
-                    if filter.Operation.ETHTransfer.value
-                    == self.navigation.filter.operation.value
+                    if filter.Operation.ETHTransfer == self.navigation.filter.operation
                     else filter.Operation.ETHTransfer.value,
                     callback=self.set_ethtransfer_operation,
                 ),
@@ -331,24 +329,24 @@ class NewFilterMessage(BaseMessage):
                     ],
                     [
                         MenuButton(
-                            label=f"✅{filter.Operation.Deployment.value}"
-                            if filter.Operation.Deployment.value
-                            == self.navigation.filter.generator_options.operation.value
-                            else filter.Operation.Deployment.value,
+                            label=f"✅Generate {filter.Operation.Deployment.value}"
+                            if filter.Operation.Deployment
+                            == self.navigation.filter.generator_options.operation
+                            else f"Generate {filter.Operation.Deployment.value}",
                             callback=self.set_generator_deployment_operation,
                         ),
                         MenuButton(
-                            label=f"✅{filter.Operation.BuyToken.value}"
-                            if filter.Operation.BuyToken.value
-                            == self.navigation.filter.generator_options.operation.value
-                            else filter.Operation.BuyToken.value,
+                            label=f"✅Generate {filter.Operation.BuyToken.value}"
+                            if filter.Operation.BuyToken
+                            == self.navigation.filter.generator_options.operation
+                            else f"Generate {filter.Operation.BuyToken.value}",
                             callback=self.set_generator_buytoken_operation,
                         ),
                         MenuButton(
-                            label=f"✅{filter.Operation.ETHTransfer.value}"
-                            if filter.Operation.ETHTransfer.value
-                            == self.navigation.filter.generator_options.operation.value
-                            else filter.Operation.ETHTransfer.value,
+                            label=f"✅Generate {filter.Operation.ETHTransfer.value}"
+                            if filter.Operation.ETHTransfer
+                            == self.navigation.filter.generator_options.operation
+                            else f"Generate {filter.Operation.ETHTransfer.value}",
                             callback=self.set_generator_ethtransfer_operation,
                         ),
                     ],
