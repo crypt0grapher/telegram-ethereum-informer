@@ -45,6 +45,7 @@ class Filter:
         generator_channel: str = "",
         is_active: bool = True,
         sub_filter_ids: List[int] = None,
+        parent=None,
     ):
         self.chat_id = chat_id
         self.name = name
@@ -61,6 +62,7 @@ class Filter:
         self.is_active = is_active
         self.sub_filter_ids = sub_filter_ids
         self.next_sub_filter_id = 1
+        self.parent = parent
 
     def to_json(self):
         return {
@@ -169,14 +171,17 @@ class Filter:
         return tx["to"] == None and tx["value"] == "0x0"
 
     def match_eth_transfer(self, tx):
-        return tx["to"] and tx["input"] == "0x" and int(tx["value"], 16) > 0
+        return True
+        # return tx["to"] and tx["input"] == "0x" and tx["value"] > 0
 
     def match_buy_token(self, tx):
         return tx["input"].startswith("0x7ff36ab5") or tx["input"].startswith(
             "0x38ed1739"
         )
 
-    def match_tx(self, tx):
+    def match_transaction(self, tx):
+        if "from" not in tx:
+            return False
         if self.operation == Operation.Deployment:
             return self.match_deployment(tx)
         elif self.operation == Operation.BuyToken:

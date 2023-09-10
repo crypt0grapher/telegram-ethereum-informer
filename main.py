@@ -18,4 +18,5 @@ if __name__ == "__main__":
     load_filters_from_file()
     ethereum_thread.start()
     start_bot()
+
     ethereum_thread.join()

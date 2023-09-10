@@ -13,7 +13,7 @@ from telegram_menu import (
 
 import filter
 from filter import Filter
-from all_filters import all_filters, add_new_filter, is_unique_name
+from all_filters import add_new_filter, is_unique_name
 from helpers import safe_int_parse, safe_float_parse
 from telegram_bot.name_message import NameMessage
 from telegram_bot.navigation_handler import BotNavigationHandler
@@ -150,9 +150,7 @@ class NewFilterMessage(BaseMessage):
             await self.navigation.send_message("Select the field to update first")
             return
         elif selected == FIELDS["NAME"]:
-            if len(all_filters) > 0 and any(
-                filter.name.upper() == text.upper() for filter in all_filters
-            ):
+            if not is_unique_name(selected, self.navigation.chat_id):
                 await self.navigation.send_message("Name already exists")
                 return
             self.navigation.filter.name = text
