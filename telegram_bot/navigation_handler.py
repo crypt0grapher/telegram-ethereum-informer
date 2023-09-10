@@ -27,9 +27,9 @@ class BotNavigationHandler(NavigationHandler):
     def bot(self):
         return self._bot
 
-    def has_access_to_channel(self, channel):
+    async def has_access_to_channel(self, channel):
         try:
-            self.bot.get_chat(chat_id=channel)
+            chat = await self.bot.get_chat(chat_id=channel)
             return True
         except Exception as e:
             return False

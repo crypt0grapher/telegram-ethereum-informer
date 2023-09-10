@@ -17,8 +17,8 @@ def load_filters_from_file():
     try:
         with open("filters.json", "r") as f:
             all_filters = json.load(f)
-            for channel_id, filters_json in all_filters.items():
-                all_filters[channel_id] = [
+            for str_channel_id, filters_json in all_filters.items():
+                all_filters[str_channel_id] = [
                     Filter.from_json(f_json) for f_json in filters_json
                 ]
     except FileNotFoundError:

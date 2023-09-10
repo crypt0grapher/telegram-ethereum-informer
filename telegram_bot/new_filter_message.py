@@ -127,18 +127,18 @@ class NewFilterMessage(BaseMessage):
         self.navigation.filter.operation = filter.Operation.Deployment
         return "Updated"
 
-    def confirm(self) -> str:
+    async def confirm(self) -> str:
         if self.navigation.filter.is_correct():
             if not is_unique_name(self.navigation.filter.name, self.navigation.chat_id):
-                self.navigation.send_message("Filter already exists")
+                await self.navigation.send_message("Filter already exists")
                 return "Filter already exists"
             add_new_filter(self.navigation.filter, self.navigation.chat_id)
             # del self.navigation.filter
             self.navigation.filter = Filter(self.navigation.chat_id)
-            self.navigation.send_message(f"Filter started")
+            await self.navigation.send_message(f"Filter started")
             return "Filter started"
         else:
-            self.navigation.send_message("Filter details are not complete")
+            await self.navigation.send_message("Filter details are not complete")
             return "Fill in the details first"
 
     async def text_input(
@@ -205,15 +205,15 @@ class NewFilterMessage(BaseMessage):
                 await self.navigation.send_message("Invalid number")
                 return
         elif selected == FIELDS["CHANNEL"]:
-            if self.navigation.has_access_to_channel(text):
+            if await self.navigation.has_access_to_channel(text):
                 self.navigation.filter.channel = text
             else:
                 await self.navigation.send_message(
-                    "Invalid channel or the bot has no access to it"
+                    "Invalid channel or the bot has no access to it. Add the bot to the chat and try again."
                 )
                 return
         elif selected == FIELDS["GENERATOR_CHANNEL"]:
-            if self.navigation.has_access_to_channel(text):
+            if await self.navigation.has_access_to_channel(text):
                 self.navigation.filter.generator_channel = text
             else:
                 await self.navigation.send_message(

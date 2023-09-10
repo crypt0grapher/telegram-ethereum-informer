@@ -10,7 +10,8 @@ from all_filters import all_filters, add_new_filter
 import asyncio
 import json
 from websockets import connect
-from web3 import Web3
+from web3 import AsyncWeb3
+from web3.providers import WebsocketProviderV2
 
 from message_formatter import format_message
 from notifier import send_message
@@ -33,24 +34,11 @@ def process_block(block):
 
 
 async def listen_to_new_blocks(ws_uri, rpc_id=1):
-    async with connect(ws_uri) as ws:
-        # Subscribe to new blocks
-        payload = json.dumps(
-            {"id": rpc_id, "method": "eth_subscribe", "params": ["newHeads"]}
-        )
-        await ws.send(payload)
-
-        # Listen for new blocks
-        while True:
-            response = await ws.recv()
-            block_data = json.loads(response).get("params", {}).get("result", {})
-            if block_data:
-                block_number_hex = block_data.get("number")
-                block_number = int(block_number_hex, 16)
-                logging.debug(f"New block: {block_number}")
-                w3 = Web3(Web3.WebsocketProvider(ws_uri))
-                block = w3.eth.getBlock(block_number, True)
-                process_block(block)
+    async with AsyncWeb3.persistent_websocket(WebsocketProviderV2(ws_uri)) as w3:
+        subscription_id = await w3.eth.subscribe("newHeads")
+        async for response in w3.listen_to_websocket():
+            block = await w3.eth.get_block(response.number)
+            process_block(block)
 
 
 def start_listener():

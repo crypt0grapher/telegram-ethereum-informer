@@ -29,12 +29,11 @@ class AllFiltersMessage(BaseMessage):
     ) -> None:
         super().__init__(navigation, AllFiltersMessage.LABEL, inlined=True)
 
-    def edit(self, args) -> str:
+    async def edit(self, args) -> str:
         self.navigation.filter = args[0].copy()
         remove_filter(args[0].name, self.navigation.chat_id)
-        self.navigation.send_message(str(self.navigation.filter))
-        NewFilterMessage(self.navigation, edit=True)
-        return "Edit the filter"
+        await self.navigation.select_menu_button("Add Filter")
+        return "Press 'Confirm and Start Filter' to add the filter back to the list once you are done editing it"
 
     async def toggle(
         self,
@@ -65,7 +64,7 @@ class AllFiltersMessage(BaseMessage):
                         args=[filter],
                     ),
                     MenuButton(
-                        label="▶️" if filter.is_active else "⏸️",
+                        label="🔴  ▶️" if not filter.is_active else "🟢  ⏸️",
                         callback=self.toggle,
                         btype=ButtonType.NOTIFICATION,
                         args=[filter],
