@@ -24,31 +24,38 @@ async def process_block(w3, block):
     if "transactions" in block:
         for txhash in block["transactions"]:
             tx = await w3.eth.get_transaction(txhash)
+            current_blocks_messages = {}
             for channel_id, filters in get_all_filters().items():
-                current_channel_message = ""
                 for f in filters:
                     if f.is_active:
                         if f.match_transaction(tx):
                             if (
-                                f.fresh
+                                f.freshness
                                 and f.from_address
                                 and f.operation == Operation.ETHTransfer
                             ):
-                                count = w3.eth.get_transaction_count(f.to_address)
-                                if count > f.fresh:
+                                nonce = await w3.eth.get_transaction_count(tx["to"])
+                                if not nonce or nonce > f.freshness:
                                     continue
                             # web3.eth.get_transaction_count
                             # Send a Telegram notification to the channel_id
-                            current_channel_message += format_message(tx, f)
+                            if f.channel not in current_blocks_messages:
+                                current_blocks_messages[f.channel] = ""
+                            current_blocks_messages[f.channel] += format_message(tx, f)
                             # Generate new filter if needed
                             if f.generator:
                                 new_filter = f.generate_subfilter(tx["from"])
                                 add_new_filter(new_filter, channel_id)
-                                current_channel_message += (
-                                    "New filter generated: " + str(new_filter.name)
-                                )
+                                current_blocks_messages[
+                                    f.channel
+                                ] += "New filter generated: " + str(new_filter.name)
+
+            for (
+                destination_channel_id,
+                current_channel_message,
+            ) in current_blocks_messages.items():
                 if current_channel_message:
-                    await send_message(channel_id, current_channel_message)
+                    await send_message(destination_channel_id, current_channel_message)
 
 
 async def listen_to_new_blocks(ws_uri, rpc_id=1):
@@ -56,10 +63,11 @@ async def listen_to_new_blocks(ws_uri, rpc_id=1):
         subscription_id = await w3.eth.subscribe("newHeads")
         while True:
             async for response in w3.listen_to_websocket():
-                block_number = response["number"]
-                logging.info("Current block: " + str(block_number))
-                block = await w3.eth.get_block(response["number"])
-                await process_block(w3, block)
+                if "number" in response:
+                    block_number = response["number"]
+                    logging.info("Current block: " + str(block_number))
+                    block = await w3.eth.get_block(response["number"])
+                    await process_block(w3, block)
 
 
 def start_listener():

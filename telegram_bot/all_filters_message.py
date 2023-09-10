@@ -21,7 +21,7 @@ from telegram_bot.new_filter_message import NewFilterMessage
 class AllFiltersMessage(BaseMessage):
     """Options app message, show an example of a button with inline buttons."""
 
-    LABEL = "All Filters"
+    LABEL = "Filters"
 
     def __init__(
         self,

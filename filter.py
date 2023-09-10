@@ -148,7 +148,7 @@ class Filter:
         )
 
     def generate_subfilter(self, address: str):
-        name = f"{self.name}_{format(self.next_sub_filter_id,'.2f')}"
+        name = f"{self.name}_{str(self.next_sub_filter_id)}"
         self.next_sub_filter_id += 1
         subfilter = Filter(
             self.chat_id,
