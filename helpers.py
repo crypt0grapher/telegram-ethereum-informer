@@ -22,3 +22,10 @@ def find_by_name(target_name, obj_list):
         if obj.name == target_name:
             return obj
     return None
+
+
+def safe_bignumber_to_float(value):
+    try:
+        return float(value) / 10**18
+    except ValueError:
+        return 0.0

@@ -159,6 +159,8 @@ class Filter:
             channel=self.generator_options.channel,
             parent=self.name,
         )
+        if self.sub_filter_ids == None:
+            self.sub_filter_ids = []
         self.sub_filter_ids.append(name)
         return subfilter
 
@@ -171,8 +173,7 @@ class Filter:
         return tx["to"] == None and tx["value"] == "0x0"
 
     def match_eth_transfer(self, tx):
-        return True
-        # return tx["to"] and tx["input"] == "0x" and tx["value"] > 0
+        return tx["to"] and tx["input"] == "0x" and tx["value"] > 0
 
     def match_buy_token(self, tx):
         return tx["input"].startswith("0x7ff36ab5") or tx["input"].startswith(
