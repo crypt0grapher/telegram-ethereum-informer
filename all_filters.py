@@ -73,6 +73,11 @@ def get_filters_by_chat_id(chat_id):
     return all_filters.get(str(chat_id), [])
 
 
+def get_filter_by_name(chat_id, name):
+    global all_filters
+    return next((f for f in get_filters_by_chat_id(chat_id) if f.name == name), None)
+
+
 def get_all_filters():
     global all_filters
     with lock:

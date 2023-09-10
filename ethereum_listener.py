@@ -29,7 +29,7 @@ async def process_block(w3, block):
                 if f.is_active:
                     if f.match_transaction(tx):
                         # Send a Telegram notification to the channel_id
-                        send_message(f.channel, format_message(tx, f))
+                        await send_message(f.channel, format_message(tx, f))
                         # Generate new filter if needed
                         if f.generator:
                             new_filter = f.generate_subfilter(tx["from"])
