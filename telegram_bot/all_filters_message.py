@@ -32,7 +32,7 @@ class AllFiltersMessage(BaseMessage):
     async def edit(self, args) -> str:
         self.navigation.filter = args[0].copy()
         remove_filter(args[0].name, self.navigation.chat_id)
-        await self.navigation.select_menu_button("Add Filter")
+        await self.navigation.select_menu_button("New")
         return "Press 'Confirm and Start Filter' to add the filter back to the list once you are done editing it"
 
     async def toggle(

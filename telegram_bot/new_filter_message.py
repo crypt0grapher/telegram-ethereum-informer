@@ -85,14 +85,14 @@ class NewFilterMessage(BaseMessage):
         self.navigation.send_message(f"Enter Freshness for the filter")
         return "Enter Freshness"
 
-    def new_channel(self) -> str:
+    async def new_channel(self) -> str:
         self.selected = FIELDS["CHANNEL"]
-        self.navigation.send_message(f"Enter channel to notify in")
+        await self.navigation.send_message(f"Enter channel to notify in")
         return "Enter Channel"
 
-    def new_generator_channel(self) -> str:
+    async def new_generator_channel(self) -> str:
         self.selected = FIELDS["GENERATOR_CHANNEL"]
-        self.navigation.send_message(
+        await self.navigation.send_message(
             f"Enter channel for generated filters to notify in"
         )
         return "Enter Channel"

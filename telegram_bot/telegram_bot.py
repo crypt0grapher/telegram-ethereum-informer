@@ -174,10 +174,10 @@ class StartMessage(BaseMessage):
         super().__init__(navigation, StartMessage.LABEL)
         # define menu buttons
         system = SystemAppMessage(navigation)
-        self.add_button(label="All Filters", callback=AllFiltersMessage(navigation))
-        self.add_button(label="Wallets Found", callback=AllFiltersMessage(navigation))
-        self.add_button(label="Add Filter", callback=NewFilterMessage(navigation))
-        self.add_button(label="Status", callback=system)
+        self.add_button(label="Filters", callback=AllFiltersMessage(navigation))
+        # self.add_button(label="Wallets Found", callback=AllFiltersMessage(navigation))
+        self.add_button(label="New", callback=NewFilterMessage(navigation))
+        # self.add_button(label="Status", callback=system)
 
     def update(self) -> str:
         return (

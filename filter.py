@@ -1,6 +1,8 @@
 from typing import List
 from enum import Enum
 
+from helpers import safe_bignumber_to_float
+
 
 class Operation(Enum):
     Deployment = "Deployment"
@@ -170,15 +172,19 @@ class Filter:
             self.parent = None
 
     def match_deployment(self, tx):
-        return tx["to"] == None and tx["value"] == "0x0"
+        return tx["to"] == None and tx["value"] == 0
 
     def match_eth_transfer(self, tx):
-        return tx["to"] and tx["input"] == "0x" and tx["value"] > 0
+        address = self.to_address if self.to_address else self.from_address
+        return (
+            tx["to" if self.to_address else "from"].lower() == address.lower()
+            and self.min_value <= safe_bignumber_to_float(tx["value"]) <= self.max_value
+        )
 
     def match_buy_token(self, tx):
-        return tx["input"].startswith("0x7ff36ab5") or tx["input"].startswith(
-            "0x38ed1739"
-        )
+        return tx["input"].hex().startswith("0x7ff36ab5") or tx[
+            "input"
+        ].hex().startswith("0x38ed1739")
 
     def match_transaction(self, tx):
         if "from" not in tx:

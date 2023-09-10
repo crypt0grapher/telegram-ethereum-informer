@@ -6,28 +6,16 @@ from helpers import safe_bignumber_to_float
 
 def format_message(tx, f):
     filter_name = f.name
-    amount = safe_bignumber_to_float(tx["value"])
-    dt_object = datetime.datetime.fromtimestamp(
-        int(tx["timeStamp"]) if tx["timeStamp"] else time.time()
-    )
-    print(dt_object.strftime("%Y-%m-%d %H:%M:%S"))
-
+    amount = safe_bignumber_to_float(tx["value"]) if "value" in tx else 0.0
     hash = tx["hash"].hex()
     hash_with_link = f'<a href="https://etherscan.io/tx/{hash}">{hash}</a>'
     current_message = (
-        filter.name
+        filter_name
         + "\n"
         + "block: "
-        + tx["blockNumber"]
+        + str(tx["blockNumber"])
         + "\n"
-        + "timestamp: "
-        + tx["timeStamp"]
-        + " ("
-        + dt_object.strftime("%Y-%m-%d %H:%M:%S")
-        + ")"
-        + "\n"
-        + "gas price: "
-        + tx["gasPrice"]
+        + f.operation.value
         + "\n"
         + "tx hash: "
         + hash_with_link
