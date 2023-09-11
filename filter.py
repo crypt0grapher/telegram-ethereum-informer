@@ -106,6 +106,8 @@ class Filter:
     def is_correct(self):
         if self.from_address and self.to_address:
             return False
+        if self.min_value < 0 or self.max_value < 0:
+            return False
         if self.min_value > self.max_value:
             return False
         if self.freshness < 0:
@@ -155,8 +157,8 @@ class Filter:
             name,
             from_address=address,
             to_address=None,
-            min_value=0,
-            max_value=2**256 - 1,
+            min_value=0.00001,
+            max_value=10000,
             operation=self.generator_options.operation,
             channel=self.generator_options.channel,
             parent=self.name,
