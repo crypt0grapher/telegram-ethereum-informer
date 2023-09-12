@@ -169,7 +169,7 @@ class Filter:
         return subfilter
 
     def __del__(self):
-        if self.parent:
+        if self.parent and self.parent.sub_filter_ids:
             self.parent.sub_filter_ids.remove(self.name)
             self.parent = None
 

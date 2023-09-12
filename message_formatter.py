@@ -5,6 +5,8 @@ from helpers import safe_bignumber_to_float
 
 
 def format_message(tx, f):
+    if not tx or not f:
+        return ""
     filter_name = f.name
     amount = safe_bignumber_to_float(tx["value"]) if "value" in tx else 0.0
     hash = tx["hash"].hex()
