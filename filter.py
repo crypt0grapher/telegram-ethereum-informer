@@ -149,13 +149,13 @@ class Filter:
             self.sub_filter_ids,
         )
 
-    def generate_subfilter(self, address: str):
+    def generate_subfilter(self, from_address: str):
         name = f"{self.name}_{str(self.next_sub_filter_id)}"
         self.next_sub_filter_id += 1
         subfilter = Filter(
             self.chat_id,
             name,
-            from_address=address,
+            from_address,
             to_address=None,
             min_value=0.00001,
             max_value=10000,

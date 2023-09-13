@@ -44,11 +44,14 @@ async def process_block(w3, block):
                             current_blocks_messages[f.channel] += format_message(tx, f)
                             # Generate new filter if needed
                             if f.generator:
-                                new_filter = f.generate_subfilter(tx["from"])
+                                new_filter = f.generate_subfilter(tx["to"])
                                 add_new_filter(new_filter, channel_id)
-                                current_blocks_messages[
-                                    f.channel
-                                ] += "New filter generated: " + str(new_filter.name)
+                                current_blocks_messages[f.channel] += (
+                                    "New filter generated: '"
+                                    + str(new_filter.name)
+                                    + "'\nFrom: "
+                                    + (tx["to"])
+                                )
 
             for (
                 destination_channel_id,
