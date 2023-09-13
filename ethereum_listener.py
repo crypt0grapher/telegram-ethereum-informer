@@ -55,7 +55,19 @@ async def process_block(w3, block):
                 current_channel_message,
             ) in current_blocks_messages.items():
                 if current_channel_message:
-                    await send_message(destination_channel_id, current_channel_message)
+                    try:
+                        await send_message(
+                            destination_channel_id, current_channel_message
+                        )
+                    except Exception as e:
+                        await send_message(
+                            channel_id,
+                            "Error sending message: "
+                            + str(e)
+                            + "message was: "
+                            + current_channel_message,
+                        )
+                        logging.error("Error sending message: " + str(e))
 
 
 async def listen_to_new_blocks(ws_uri, rpc_id=1):
