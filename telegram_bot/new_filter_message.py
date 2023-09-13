@@ -210,7 +210,7 @@ class NewFilterMessage(BaseMessage):
                 await self.navigation.send_message(
                     "Invalid channel or the bot has no access to it. Add the bot to the chat and try again."
                 )
-            return
+                return
         elif selected == FIELDS["GENERATOR_CHANNEL"]:
             if await self.navigation.has_access_to_channel(text):
                 self.navigation.filter.generator_channel = text
@@ -218,7 +218,7 @@ class NewFilterMessage(BaseMessage):
                 await self.navigation.send_message(
                     "Invalid channel or the bot has no access to it"
                 )
-            return
+                return
         await self.navigation.send_message(f"{selected} updated")
         await self.navigation.edit_message(self)
 
