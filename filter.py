@@ -129,7 +129,15 @@ class Filter:
         return self.__str__()
 
     def __eq__(self, other):
-        return self.name == other.name
+        return (
+            self.from_address == other.from_address
+            and self.to_address == other.to_address
+            and self.min_value == other.min_value
+            and self.max_value == other.max_value
+            and self.operation == other.operation
+            and self.freshness == other.freshness
+            and self.channel == other.channel
+        )
 
     def copy(self):
         return Filter(
@@ -184,9 +192,21 @@ class Filter:
         )
 
     def match_buy_token(self, tx):
-        return tx["input"].hex().startswith("0x7ff36ab5") or tx[
+        weth_address = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+        usdc_address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+        usdt_address = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+
+        # Check if the transaction input starts with a method ID that corresponds to buying
+        is_buy_method = tx["input"].hex().startswith("0x7ff36ab5") or tx[
             "input"
         ].hex().startswith("0x38ed1739")
+        is_valid_token = tx["to"] in [
+            weth_address,
+            usdc_address,
+            usdt_address,
+        ]
+        is_eth_transfer = tx.get("value", 0) > 0
+        return is_buy_method and (is_valid_token or is_eth_transfer)
 
     def match_transaction(self, tx):
         if "from" not in tx:

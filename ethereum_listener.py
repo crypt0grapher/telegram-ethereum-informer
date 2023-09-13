@@ -45,13 +45,19 @@ async def process_block(w3, block):
                             # Generate new filter if needed
                             if f.generator:
                                 new_filter = f.generate_subfilter(tx["to"])
-                                add_new_filter(new_filter, channel_id)
-                                current_blocks_messages[f.channel] += (
-                                    "New filter generated: '"
-                                    + str(new_filter.name)
-                                    + "'\nFrom: "
-                                    + (tx["to"])
-                                )
+                                if any(
+                                    new_filter == f
+                                    for f in get_all_filters()[channel_id]
+                                ):
+                                    logging.info("Filter already exists, not adding")
+                                else:
+                                    add_new_filter(new_filter, channel_id)
+                                    current_blocks_messages[f.channel] += (
+                                        "New filter generated: '"
+                                        + str(new_filter.name)
+                                        + "'\nFrom: "
+                                        + (tx["to"])
+                                    )
 
             for (
                 destination_channel_id,
