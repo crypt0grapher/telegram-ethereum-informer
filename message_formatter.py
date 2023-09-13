@@ -1,6 +1,7 @@
 import datetime
 import time
 
+from filter import Operation
 from helpers import safe_bignumber_to_float
 
 
@@ -31,7 +32,8 @@ def format_message(tx, f):
         + "value: "
         + str(amount)
         + " ETH\n"
-        + "tx count: "
-        + "\n\n"
     )
+    if f.operation == Operation.BuyToken:
+        token = tx["input"].hex()[10:74]
+        current_message += "token: " + token + "\n"
     return current_message
