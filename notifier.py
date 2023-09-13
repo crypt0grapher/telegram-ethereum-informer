@@ -11,4 +11,8 @@ bot = Bot(TELEGRAM_BOT_API)
 
 # Function to send Telegram notification (stub)
 async def send_message(channel, message):
-    await bot.send_message(channel, message, parse_mode="HTML")
+    if len(message) > 4096:
+        for i in range(0, len(message), 4096):
+            await bot.send_message(channel, message[i : i + 4096], parse_mode="HTML")
+    else:
+        await bot.send_message(channel, message, parse_mode="HTML")
