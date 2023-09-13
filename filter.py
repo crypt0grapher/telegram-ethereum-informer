@@ -161,7 +161,7 @@ class Filter:
             max_value=10000,
             operation=self.generator_options.operation,
             channel=self.generator_options.channel,
-            parent=self.name,
+            parent=self,
         )
         if self.sub_filter_ids == None:
             self.sub_filter_ids = []

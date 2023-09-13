@@ -71,6 +71,7 @@ async def listen_to_new_blocks(ws_uri, rpc_id=1):
 
 
 def start_listener():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(listen_to_new_blocks(ETHERUM_NODE_WS_URI))
+    while True:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(listen_to_new_blocks(ETHERUM_NODE_WS_URI))
