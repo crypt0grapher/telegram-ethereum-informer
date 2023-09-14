@@ -103,7 +103,7 @@ def start_listener():
         asyncio.set_event_loop(loop)
         try:
             loop.run_until_complete(
-                listen_to_new_blocks(ETHERUM_NODE_WS_URI or "ws://66.42.41.144:8546")
+                listen_to_new_blocks(ETHERUM_NODE_WS_URI or "ws://127.0.0.1:8546")
             )
         except Exception as e:
             logging.error("Error in listener: " + str(e))
