@@ -1,6 +1,6 @@
 from typing import List
 from enum import Enum
-
+from web3 import Web3
 from helpers import safe_bignumber_to_float
 
 
@@ -195,17 +195,70 @@ class Filter:
         weth_address = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
         usdc_address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
         usdt_address = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
-
+        abi = [
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "amountOutMin",
+                        "type": "uint256",
+                    },
+                    {
+                        "internalType": "address[]",
+                        "name": "path",
+                        "type": "address[]",
+                    },
+                    {"internalType": "address", "name": "to", "type": "address"},
+                    {"internalType": "uint256", "name": "deadline", "type": "uint256"},
+                ],
+                "name": "swapExactETHForTokens",
+                "outputs": [
+                    {
+                        "internalType": "uint256[]",
+                        "name": "amounts",
+                        "type": "uint256[]",
+                    }
+                ],
+                "stateMutability": "payable",
+                "type": "function",
+            },
+            {
+                "inputs": [
+                    {"internalType": "uint256", "name": "amountIn", "type": "uint256"},
+                    {
+                        "internalType": "uint256",
+                        "name": "amountOutMin",
+                        "type": "uint256",
+                    },
+                    {
+                        "internalType": "address[]",
+                        "name": "path",
+                        "type": "address[]",
+                    },
+                    {"internalType": "address", "name": "to", "type": "address"},
+                    {"internalType": "uint256", "name": "deadline", "type": "uint256"},
+                ],
+                "name": "swapExactTokensForTokens",
+                "outputs": [
+                    {
+                        "internalType": "uint256[]",
+                        "name": "amounts",
+                        "type": "uint256[]",
+                    }
+                ],
+                "stateMutability": "nonpayable",
+                "type": "function",
+            },
+        ]
         input_data = tx["input"].hex()
-
-        if input_data.startswith("0x7ff36ab5"):
-            start = 100 * 2  # Each byte is 2 hexadecimal characters
-        elif input_data.startswith("0x38ed1739"):
-            start = 132 * 2  # Each byte is 2 hexadecimal characters
-        else:
+        if not input_data.startswith("0x7ff36ab5") or not input_data.startswith(
+            "0x38ed1739"
+        ):
             return None
-        end = start + 40
-        pair = ["0x" + input_data[start:start], "0x" + input_data[end : end + 40]]
+
+        contract = Web3.eth.contract(address=tx["to"], abi=abi)
+        func_obj, func_params = contract.decode_function_input(tx["input"])
+        pair = [func_params["path"][0], func_params["path"][-1]]
 
         is_eth_transfer = tx.get("value", 0) > 0
         if pair[1] in [weth_address, usdc_address, usdt_address] or is_eth_transfer:
