@@ -196,17 +196,19 @@ class Filter:
         usdc_address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
         usdt_address = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
 
-        # Check if the transaction input starts with a method ID that corresponds to buying
-        is_buy_method = tx["input"].hex().startswith("0x7ff36ab5") or tx[
-            "input"
-        ].hex().startswith("0x38ed1739")
-        is_valid_token = tx["to"] in [
-            weth_address,
-            usdc_address,
-            usdt_address,
-        ]
+        input_data = tx["input"].hex()
+
+        if input_data.startswith("0x7ff36ab5"):
+            start = 100 * 2  # Each byte is 2 hexadecimal characters
+        elif input_data.startswith("0x38ed1739"):
+            start = 132 * 2  # Each byte is 2 hexadecimal characters
+        else:
+            return None
+        end = start + 40
+        pair = ["0x" + input_data[start:start], "0x" + input_data[end : end + 40]]
+
         is_eth_transfer = tx.get("value", 0) > 0
-        return is_buy_method and (is_valid_token or is_eth_transfer)
+        return pair[1] in [weth_address, usdc_address, usdt_address] or is_eth_transfer
 
     def match_transaction(self, tx):
         if "from" not in tx:
