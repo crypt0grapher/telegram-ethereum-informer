@@ -208,7 +208,8 @@ class Filter:
         pair = ["0x" + input_data[start:start], "0x" + input_data[end : end + 40]]
 
         is_eth_transfer = tx.get("value", 0) > 0
-        return pair[1] in [weth_address, usdc_address, usdt_address] or is_eth_transfer
+        if pair[1] in [weth_address, usdc_address, usdt_address] or is_eth_transfer:
+            return pair[0]
 
     def match_transaction(self, tx):
         if "from" not in tx:

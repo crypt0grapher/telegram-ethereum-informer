@@ -31,8 +31,8 @@ def format_message(tx, f):
         + "\n"
         + "value: "
         + str(amount)
-        + " ETH\n\n"
+        + " ETH\n"
     )
     if f.operation == Operation.BuyToken:
-        current_message += f'<a href="https://etherscan.io/address/{f.match_buy_token(tx)}">{f.match_buy_token(tx)}</a>'
-    return current_message
+        current_message += f'token: <a href="https://etherscan.io/address/{f.match_buy_token(tx)}">{f.match_buy_token(tx)}</a>\n'
+    return current_message + "\n"
