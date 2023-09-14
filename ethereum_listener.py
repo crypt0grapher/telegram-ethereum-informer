@@ -35,7 +35,11 @@ async def process_block(w3, block):
                                 and f.operation == Operation.ETHTransfer
                             ):
                                 nonce = await w3.eth.get_transaction_count(tx["to"])
-                                if not nonce or nonce > f.freshness:
+                                if (
+                                    not nonce
+                                    or "nonce" not in nonce
+                                    or nonce.nonce > f.freshness
+                                ):
                                     continue
                             # web3.eth.get_transaction_count
                             # Send a Telegram notification to the channel_id
@@ -95,4 +99,11 @@ def start_listener():
     while True:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        loop.run_until_complete(listen_to_new_blocks(ETHERUM_NODE_WS_URI))
+        try:
+            loop.run_until_complete(
+                listen_to_new_blocks(ETHERUM_NODE_WS_URI or "ws://127.0.0.1:8546")
+            )
+        except Exception as e:
+            logging.error("Error in listener: " + str(e))
+            loop.close()
+            continue

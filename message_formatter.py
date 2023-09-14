@@ -31,7 +31,7 @@ def format_message(tx, f):
         + "\n"
         + "value: "
         + str(amount)
-        + " ETH\n"
+        + " ETH\n\n"
     )
     if f.operation == Operation.BuyToken:
         token = tx["input"].hex()[10:74]

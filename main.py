@@ -3,12 +3,13 @@
 import threading
 
 from all_filters import load_filters_from_file
+from config import LOGGING_LEVEL
 from telegram_bot import start_bot
 from ethereum_listener import start_listener
 import logging
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=LOGGING_LEVEL or "INFO")
     logging.info("Starting bot...")
 
     # Create threads
