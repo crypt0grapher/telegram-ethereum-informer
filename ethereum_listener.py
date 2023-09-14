@@ -44,8 +44,10 @@ async def process_block(w3, block):
                             # web3.eth.get_transaction_count
                             # Send a Telegram notification to the channel_id
                             if f.channel not in current_blocks_messages:
-                                current_blocks_messages[f.channel] = ""
-                            current_blocks_messages[f.channel] += format_message(tx, f)
+                                current_blocks_messages[f.channel] = []
+                            current_blocks_messages[f.channel].append(
+                                format_message(tx, f)
+                            )
                             # Generate new filter if needed
                             if f.generator:
                                 new_filter = f.generate_subfilter(tx["to"])
@@ -56,7 +58,7 @@ async def process_block(w3, block):
                                     logging.info("Filter already exists, not adding")
                                 else:
                                     add_new_filter(new_filter, channel_id)
-                                    current_blocks_messages[f.channel] += (
+                                    current_blocks_messages[f.channel].append(
                                         "New filter generated: '"
                                         + str(new_filter.name)
                                         + "'\nFrom: "
@@ -65,12 +67,12 @@ async def process_block(w3, block):
 
             for (
                 destination_channel_id,
-                current_channel_message,
+                current_channel_messages,
             ) in current_blocks_messages.items():
-                if current_channel_message:
+                if current_channel_messages:
                     try:
                         await send_message(
-                            destination_channel_id, current_channel_message
+                            destination_channel_id, current_channel_messages
                         )
                     except Exception as e:
                         await send_message(
@@ -78,7 +80,7 @@ async def process_block(w3, block):
                             "Error sending message: "
                             + str(e)
                             + "message was: "
-                            + current_channel_message,
+                            + current_channel_messages,
                         )
                         logging.error("Error sending message: " + str(e))
 
@@ -101,7 +103,7 @@ def start_listener():
         asyncio.set_event_loop(loop)
         try:
             loop.run_until_complete(
-                listen_to_new_blocks(ETHERUM_NODE_WS_URI or "ws://127.0.0.1:8546")
+                listen_to_new_blocks(ETHERUM_NODE_WS_URI or "ws://66.42.41.144:8546")
             )
         except Exception as e:
             logging.error("Error in listener: " + str(e))
