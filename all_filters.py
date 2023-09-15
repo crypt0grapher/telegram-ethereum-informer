@@ -1,4 +1,5 @@
 import json
+import logging
 import threading
 
 from filter import Filter
@@ -42,7 +43,7 @@ def save_filters_to_file():
 # Example of modifying filters and saving changes
 def add_new_filter(new_filter, channel_id):
     global all_filters
-
+    logging.debug("Adding new filter to the watchlist: " + str(new_filter))
     str_channel_id = str(channel_id)
     if is_unique_name(new_filter.name, str_channel_id):
         with lock:

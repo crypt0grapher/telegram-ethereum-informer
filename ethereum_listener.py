@@ -19,52 +19,75 @@ from notifier import send_message
 
 # Function to process a block and filter transactions
 async def process_block(w3, block):
-    logging.info("Processing block " + str(block["number"]))
+    logging.info(
+        "Processing block "
+        + str(block["number"])
+        + ", filters num: "
+        + str(len(all_filters))
+    )
     logging.debug("Filters: " + str(all_filters))
     if "transactions" in block:
-        for txhash in block["transactions"]:
-            tx = await w3.eth.get_transaction(txhash)
+        if isinstance(block["transactions"], list):
             current_blocks_messages = {}
-            for channel_id, filters in get_all_filters().items():
-                for f in filters:
-                    if f.is_active:
-                        if f.match_transaction(tx):
-                            if (
-                                f.freshness
-                                and f.from_address
-                                and f.operation == Operation.ETHTransfer
-                            ):
-                                nonce = await w3.eth.get_transaction_count(tx["to"])
-                                if (
-                                    not nonce
-                                    or "nonce" not in nonce
-                                    or nonce.nonce > f.freshness
-                                ):
-                                    continue
-                            # web3.eth.get_transaction_count
-                            # Send a Telegram notification to the channel_id
-                            if f.channel not in current_blocks_messages:
-                                current_blocks_messages[f.channel] = []
-                            current_blocks_messages[f.channel].append(
-                                format_message(tx, f)
-                            )
-                            # Generate new filter if needed
-                            if f.generator:
-                                new_filter = f.generate_subfilter(tx["to"])
-                                if any(
-                                    new_filter == f
-                                    for f in get_all_filters()[channel_id]
-                                ):
-                                    logging.info("Filter already exists, not adding")
-                                else:
-                                    add_new_filter(new_filter, channel_id)
+            for txhash in block["transactions"]:
+                tx = await w3.eth.get_transaction(txhash)
+                if isinstance(get_all_filters(), dict):
+                    all_filters_frozen_for_the_loop = get_all_filters()
+                    for channel_id, filters in all_filters_frozen_for_the_loop.items():
+                        for f in filters:
+                            if f.is_active:
+                                if f.match_transaction(w3, tx):
+                                    if (
+                                        f.freshness
+                                        and f.from_address
+                                        and f.operation == Operation.ETHTransfer
+                                    ):
+                                        logging.debug(
+                                            f"Filter {f.name}, tx matched, checking nonce"
+                                        )
+                                        nonce = await w3.eth.get_transaction_count(
+                                            tx["to"]
+                                        )
+                                        nonce = (
+                                            nonce
+                                            if isinstance(nonce, int)
+                                            else nonce.get("nonce", 0)
+                                        )
+                                        if nonce > f.freshness:
+                                            continue
+                                    # web3.eth.get_transaction_count
+                                    # Send a Telegram notification to the channel_id
+                                    logging.debug("Nonce ok, sending message")
+                                    if f.channel not in current_blocks_messages:
+                                        current_blocks_messages[f.channel] = []
                                     current_blocks_messages[f.channel].append(
-                                        "New filter generated: '"
-                                        + str(new_filter.name)
-                                        + "'\nFrom: "
-                                        + (tx["to"])
+                                        format_message(tx, f)
                                     )
+                                    # Generate new filter if needed
+                                    if f.generator:
+                                        logging.debug(
+                                            "The filter is generator, generating new filter"
+                                        )
+                                        new_filter = f.generate_subfilter(tx["to"])
+                                        if any(
+                                            new_filter == f
+                                            for f in all_filters_frozen_for_the_loop[
+                                                channel_id
+                                            ]
+                                        ):
+                                            logging.info(
+                                                "Filter already exists, not adding"
+                                            )
+                                        else:
+                                            add_new_filter(new_filter, channel_id)
+                                            current_blocks_messages[f.channel].append(
+                                                "New filter generated: '"
+                                                + str(new_filter.name)
+                                                + "'\nFrom: "
+                                                + (tx["to"])
+                                            )
 
+            logging.debug("Block processed, sending messages found")
             for (
                 destination_channel_id,
                 current_channel_messages,
@@ -80,7 +103,7 @@ async def process_block(w3, block):
                             "Error sending message: "
                             + str(e)
                             + "message was: "
-                            + current_channel_messages,
+                            + str(current_channel_messages),
                         )
                         logging.error("Error sending message: " + str(e))
 
@@ -90,10 +113,10 @@ async def listen_to_new_blocks(ws_uri, rpc_id=1):
         subscription_id = await w3.eth.subscribe("newHeads")
         while True:
             async for response in w3.listen_to_websocket():
+                logging.debug(f"Type of response: {type(response)}, value: {response}")
                 if "number" in response:
                     block_number = response["number"]
-                    logging.info("Current block: " + str(block_number))
-                    block = await w3.eth.get_block(response["number"])
+                    block = await w3.eth.get_block(block_number)
                     await process_block(w3, block)
 
 
@@ -106,6 +129,6 @@ def start_listener():
                 listen_to_new_blocks(ETHERUM_NODE_WS_URI or "ws://127.0.0.1:8546")
             )
         except Exception as e:
-            logging.error("Error in listener: " + str(e))
+            logging.error("Error in start_listener: " + str(e))
             loop.close()
             continue

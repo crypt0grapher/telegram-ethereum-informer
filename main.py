@@ -9,7 +9,7 @@ from ethereum_listener import start_listener
 import logging
 
 if __name__ == "__main__":
-    logging.basicConfig(level=LOGGING_LEVEL or "INFO")
+    logging.basicConfig(level=LOGGING_LEVEL or logging.INFO)
     logging.info("Starting bot...")
 
     # Create threads

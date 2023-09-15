@@ -1,4 +1,5 @@
 import datetime
+import logging
 import time
 
 from filter import Operation
@@ -34,5 +35,9 @@ def format_message(tx, f):
         + " ETH\n"
     )
     if f.operation == Operation.BuyToken:
-        current_message += f'token: <a href="https://etherscan.io/address/{f.match_buy_token(tx)}">{f.match_buy_token(tx)}</a>\n'
+        address = f.match_buy_token(tx)
+        current_message += (
+            f'token: <a href="https://etherscan.io/address/{address}">{address}</a>\n'
+        )
+    logging.debug("Message: " + current_message)
     return current_message + "\n"

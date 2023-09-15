@@ -46,7 +46,6 @@ class Filter:
         generator_options: Generator = Generator(Operation.BuyToken, None, None),
         generator_channel: str = "",
         is_active: bool = True,
-        sub_filter_ids: List[int] = None,
         parent=None,
     ):
         self.chat_id = chat_id
@@ -62,7 +61,6 @@ class Filter:
         self.generator_channel = generator_channel if generator_channel else chat_id
         self.generator = generator
         self.is_active = is_active
-        self.sub_filter_ids = sub_filter_ids
         self.next_sub_filter_id = 1
         self.parent = parent
 
@@ -81,7 +79,7 @@ class Filter:
             "generator_options": self.generator_options.to_json(),
             "generator_channel": self.generator_channel,
             "is_active": self.is_active,
-            "sub_filter_ids": self.sub_filter_ids,
+            "next_sub_filter_id": self.next_sub_filter_id,
         }
 
     @classmethod
@@ -100,7 +98,7 @@ class Filter:
             Generator.from_json(json_data["generator_options"]),
             json_data["generator_channel"],
             json_data["is_active"],
-            json_data["sub_filter_ids"],
+            json_data["next_sub_filter_id"],
         )
 
     def is_correct(self):
@@ -154,7 +152,6 @@ class Filter:
             self.generator_options,
             self.generator_channel,
             self.is_active,
-            self.sub_filter_ids,
         )
 
     def generate_subfilter(self, from_address: str):
@@ -171,15 +168,7 @@ class Filter:
             channel=self.generator_options.channel,
             parent=self,
         )
-        if self.sub_filter_ids == None:
-            self.sub_filter_ids = []
-        self.sub_filter_ids.append(name)
         return subfilter
-
-    def __del__(self):
-        if self.parent and self.parent.sub_filter_ids:
-            self.parent.sub_filter_ids.remove(self.name)
-            self.parent = None
 
     def match_deployment(self, tx):
         return tx["to"] == None and tx["value"] == 0
@@ -191,7 +180,7 @@ class Filter:
             and self.min_value <= safe_bignumber_to_float(tx["value"]) <= self.max_value
         )
 
-    def match_buy_token(self, tx):
+    def match_buy_token(self, tx, w3=Web3()):
         weth_address = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
         usdc_address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
         usdt_address = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
@@ -251,12 +240,11 @@ class Filter:
             },
         ]
         input_data = tx["input"].hex()
-        if not input_data.startswith("0x7ff36ab5") or not input_data.startswith(
+        if not input_data.startswith("0x7ff36ab5") and not input_data.startswith(
             "0x38ed1739"
         ):
             return None
-
-        contract = Web3.eth.contract(address=tx["to"], abi=abi)
+        contract = w3.eth.contract(address=tx["to"], abi=abi)
         func_obj, func_params = contract.decode_function_input(tx["input"])
         pair = [func_params["path"][0], func_params["path"][-1]]
 
@@ -264,8 +252,8 @@ class Filter:
         if pair[1] in [weth_address, usdc_address, usdt_address] or is_eth_transfer:
             return pair[0]
 
-    def match_transaction(self, tx):
-        if "from" not in tx:
+    def match_transaction(self, w3, tx):
+        if not hasattr(tx, "from"):
             return False
         if self.operation == Operation.Deployment:
             return self.match_deployment(tx)

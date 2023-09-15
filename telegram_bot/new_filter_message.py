@@ -310,7 +310,7 @@ class NewFilterMessage(BaseMessage):
             self.keyboard.append(
                 [
                     MenuButton(
-                        label="👍 Confirm and Start Filter",
+                        label="👍 Confirm and Activate Filter",
                         callback=self.confirm,
                     )
                 ]
