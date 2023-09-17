@@ -83,22 +83,22 @@ class AllFiltersMessage(BaseMessage):
                         btype=ButtonType.MESSAGE,
                         args=[filter],
                     ),
+                    # MenuButton(
+                    #     label=f"{i:02d} 👀",
+                    #     callback=self.view,
+                    #     btype=ButtonType.MESSAGE,
+                    #     args=[filter],
+                    # ),
                     MenuButton(
-                        label=f"{i:02d} 👀",
-                        callback=self.view,
-                        btype=ButtonType.MESSAGE,
-                        args=[filter],
-                    ),
-                    MenuButton(
-                        label=f"{i:02d} 🔴  ▶️"
+                        label=f"{i:03d} 🔴  ▶️"
                         if not filter.is_active
-                        else f"{i:02d} 🟢  ⏸️",
+                        else f"{i:03d} 🟢  ⏸️",
                         callback=self.toggle,
                         btype=ButtonType.NOTIFICATION,
                         args=[filter],
                     ),
                     MenuButton(
-                        label=f"{i:02d} ❌",
+                        label=f"{i:03d} ❌",
                         callback=self.delete,
                         btype=ButtonType.NOTIFICATION,
                         args=[filter],
