@@ -2,7 +2,7 @@ import datetime
 import logging
 import time
 
-from filter import Operation
+from filter import Operation, Filter
 from helpers import safe_bignumber_to_float
 
 

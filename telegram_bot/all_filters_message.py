@@ -12,8 +12,14 @@ from telegram.ext._callbackcontext import CallbackContext
 from telegram.ext._utils.types import BD, BT, CD, UD
 
 from filter import Filter
-from all_filters import all_filters, remove_filter, get_filters_by_chat_id
+from all_filters import (
+    all_filters,
+    remove_filter,
+    get_filters_by_chat_id,
+    get_filter_by_name,
+)
 from helpers import find_by_name
+from notifier import send_message
 from telegram_bot.navigation_handler import BotNavigationHandler
 from telegram_bot.new_filter_message import NewFilterMessage
 
@@ -22,6 +28,8 @@ class AllFiltersMessage(BaseMessage):
     """Options app message, show an example of a button with inline buttons."""
 
     LABEL = "Filters"
+    page_starts_with = 0
+    page_size = 19
 
     def __init__(
         self,
@@ -34,6 +42,12 @@ class AllFiltersMessage(BaseMessage):
         remove_filter(args[0].name, self.navigation.chat_id)
         await self.navigation.select_menu_button("New")
         return "Press 'Confirm and Start Filter' to add the filter back to the list once you are done editing it"
+
+    async def view(self, args) -> str:
+        filter = get_filter_by_name(self.navigation.chat_id, args[0].name)
+        filter_details = str(filter)
+        # await send_message(self.navigation.chat_id, filter_details)
+        return filter_details
 
     async def toggle(
         self,
@@ -55,12 +69,23 @@ class AllFiltersMessage(BaseMessage):
         if len(filters) == 0:
             return "No filters added yet"
         i = 1
-        for filter in filters:
+
+        current_page_filters = filters[
+            self.page_starts_with : self.page_starts_with + self.page_size
+        ]
+
+        for filter in current_page_filters:
             self.keyboard.append(
                 [
                     MenuButton(
-                        label=filter.name,
+                        label=filter.name + " ✏️",
                         callback=self.edit,
+                        btype=ButtonType.MESSAGE,
+                        args=[filter],
+                    ),
+                    MenuButton(
+                        label=f"{i:02d} 👀",
+                        callback=self.view,
                         btype=ButtonType.MESSAGE,
                         args=[filter],
                     ),
@@ -81,4 +106,12 @@ class AllFiltersMessage(BaseMessage):
                 ]
             )
             i += 1
+
+        if (
+            len(current_page_filters) == self.page_size
+            and len(filters) > self.page_size
+        ):
+            self.page_starts_with += self.page_size
+        else:
+            self.page_starts_with = 0
         return "Selet a filter"

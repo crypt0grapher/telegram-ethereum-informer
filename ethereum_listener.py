@@ -36,7 +36,7 @@ async def process_block(w3, block):
                     for channel_id, filters in all_filters_frozen_for_the_loop.items():
                         for f in filters:
                             if f.is_active:
-                                if f.match_transaction(w3, tx):
+                                if f.match_transaction(tx):
                                     if (
                                         f.freshness
                                         and f.from_address
