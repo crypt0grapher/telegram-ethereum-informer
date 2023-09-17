@@ -182,7 +182,7 @@ class Filter:
 
     def match_buy_token(self, tx, w3=Web3()):
         if tx.get("from") != self.from_address:
-            return False
+            return None
         weth_address = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
         usdc_address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
         usdt_address = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
@@ -251,8 +251,8 @@ class Filter:
         pair = [func_params["path"][0], func_params["path"][-1]]
 
         is_eth_transfer = tx.get("value", 0) > 0
-        if pair[1] in [weth_address, usdc_address, usdt_address] or is_eth_transfer:
-            return pair[0]
+        if pair[0] in [weth_address, usdc_address, usdt_address] or is_eth_transfer:
+            return pair[-1]
 
     def match_transaction(self, tx):
         if not hasattr(tx, "from"):

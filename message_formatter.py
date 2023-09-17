@@ -14,12 +14,10 @@ def format_message(tx, f):
     hash = tx["hash"].hex()
     hash_with_link = f'<a href="https://etherscan.io/tx/{hash}">{hash}</a>'
     current_message = (
-        filter_name
+        f"<b>{filter_name}</b> ({f.operation.value})"
         + "\n"
         + "block: "
         + str(tx["blockNumber"])
-        + "\n"
-        + f.operation.value
         + "\n"
         + "tx hash: "
         + hash_with_link

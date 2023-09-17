@@ -114,4 +114,4 @@ class AllFiltersMessage(BaseMessage):
             self.page_starts_with += self.page_size
         else:
             self.page_starts_with = 0
-        return "Selet a filter"
+        return f"Filters: {self.page_starts_with+1} - {self.page_starts_with + len(current_page_filters) } of {len(filters)}"

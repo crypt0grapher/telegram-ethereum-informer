@@ -15,6 +15,9 @@ from web3.providers import WebsocketProviderV2
 
 from message_formatter import format_message
 from notifier import send_message
+from collections import deque
+
+transaction_cache = deque(maxlen=1000)
 
 
 # Function to process a block and filter transactions
@@ -33,10 +36,17 @@ async def process_block(w3, block):
                 tx = await w3.eth.get_transaction(txhash)
                 if isinstance(get_all_filters(), dict):
                     all_filters_frozen_for_the_loop = get_all_filters()
-                    for channel_id, filters in all_filters_frozen_for_the_loop.items():
+                    for (
+                        channel_id,
+                        filters,
+                    ) in all_filters_frozen_for_the_loop.items():
                         for f in filters:
                             if f.is_active:
-                                if f.match_transaction(tx):
+                                if (
+                                    txhash not in transaction_cache
+                                    and f.match_transaction(tx)
+                                ):
+                                    transaction_cache.append(txhash)
                                     if (
                                         f.freshness
                                         and f.from_address
