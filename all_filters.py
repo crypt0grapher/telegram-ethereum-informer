@@ -69,6 +69,15 @@ def remove_filter(filter_name, channel_id):
                 save_filters_to_file()
 
 
+def remove_all_filters(channel_id):
+    global all_filters
+    with lock:
+        str_channel_id = str(channel_id)
+        if str_channel_id in all_filters:
+            all_filters[str_channel_id] = []
+            save_filters_to_file()
+
+
 def get_filters_by_chat_id(chat_id):
     global all_filters
     return all_filters.get(str(chat_id), [])

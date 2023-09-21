@@ -17,6 +17,7 @@ from all_filters import (
     remove_filter,
     get_filters_by_chat_id,
     get_filter_by_name,
+    remove_all_filters,
 )
 from helpers import find_by_name
 from notifier import send_message
@@ -49,6 +50,11 @@ class AllFiltersMessage(BaseMessage):
         # await send_message(self.navigation.chat_id, filter_details)
         return filter_details
 
+    async def delete_all(self) -> str:
+        remove_all_filters(self.navigation.chat_id)
+        await self.navigation.edit_message(self)
+        return "All filters deleted"
+
     async def toggle(
         self,
         args,
@@ -73,6 +79,16 @@ class AllFiltersMessage(BaseMessage):
         current_page_filters = filters[
             self.page_starts_with : self.page_starts_with + self.page_size
         ]
+
+        self.keyboard.append(
+            [
+                MenuButton(
+                    label=" ❌ Delete All Filters",
+                    callback=self.delete_all,
+                    btype=ButtonType.NOTIFICATION,
+                ),
+            ]
+        )
 
         for filter in current_page_filters:
             self.keyboard.append(
